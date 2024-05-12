@@ -11,10 +11,8 @@ const kv = createClient({
 async function kvSession(ctx, next) {
     const sessionId = `session:${ctx.from.id}`;
     const asd = await kv.get(sessionId);
-    console.log("Перед vсем", asd)
     try {
         let sessionData = await kv.get(sessionId);
-        console.log("kvSession", sessionData);  // Логируем текущие данные сессии
 
         if (typeof sessionData === 'string') {
             ctx.session = JSON.parse(sessionData);
@@ -37,7 +35,6 @@ async function kvSession(ctx, next) {
         // Сохраняем обновлённые данные сессии обратно в KV
         if (typeof ctx.session === 'object') {
             await kv.set(sessionId, JSON.stringify(ctx.session), { expirationTtl: 86400 });
-            console.log('заново ебошим ',  JSON.stringify(ctx.session))
         }
     } catch (error) {
         console.error('Error saving session data:', error);
@@ -46,7 +43,6 @@ async function kvSession(ctx, next) {
 
 
 async function sendMessage(ctx, messageContent, options = {}, type = 'text') {
-    console.log("Перед отправкой - данные сессии:", ctx.session);
 
     let message;
     try {
@@ -66,7 +62,6 @@ async function sendMessage(ctx, messageContent, options = {}, type = 'text') {
         }
         if (message && message.message_id) {
             ctx.session.messageIds.push(message.message_id); // Добавление ID сообщения в сессию
-            console.log(`Сообщение отправлено с ID: ${message.message_id}`, "Обновлённые данные сессии:", ctx.session);
         }
     } catch (error) {
         console.error(`Не удалось отправить ${type} сообщение:`, error);
@@ -75,12 +70,10 @@ async function sendMessage(ctx, messageContent, options = {}, type = 'text') {
     try {
         const sessionId = `session:${ctx.from.id}`;
         await kv.set(sessionId, JSON.stringify(ctx.session), { expirationTtl: 86400 });
-        console.log('Данные сессии сохранены после отправки сообщения:', ctx.session);
     } catch (error) {
         console.error('Ошибка при сохранении данных сессии:', error);
     }
 
-    console.log("После отправки - данные сессии:", ctx.session);
     return message;
 }
 
@@ -92,7 +85,6 @@ async function clearPreviousMessages(ctx, next) {
         for (let messageId of oldMessageIds) {
             try {
                 await ctx.telegram.deleteMessage(ctx.chat.id, messageId);
-                console.log(`Сообщение с ID ${messageId} удалено.`);
             } catch (error) {
                 console.error(`Ошибка при удалении сообщения с ID ${messageId}:`, error);
             }
@@ -208,7 +200,6 @@ function listenToMessages(bot) {
         // });
         const imageUrl = 'https://vxmgnelqisbmjfxf.public.blob.vercel-storage.com/ZVS%20short%20logo%20film-sWDyHOoKiXlGiTRJDHazpFunTAtG4p.mp4';
 
-        console.log("Перед отправкой после выбора языка- данные сессии:", ctx.session);
 
 
 
@@ -232,14 +223,12 @@ function listenToMessages(bot) {
 
     bot.action('contact', (ctx) => {
         const lang = ctx.session.lang;
-        console.log("Перед отправкой  contact- данные сессии:", ctx.session);
 
         if (lang && data[lang]) {
             sendMessage(ctx, data[lang].contact_data, {
                 reply_markup: getNavigationInlineKeyboard(lang)
             });
         }
-        console.log('contact', ctx.session)
     });
 
 
@@ -288,7 +277,6 @@ function listenToMessages(bot) {
 
     bot.on('text', (ctx) => {
         const messageText = ctx.message.text;
-        console.log("Received a message:", messageText); // Логируем полученное сообщение для отладки
 
         // Проверяем, что пользователь уже выбрал язык
         if (!ctx.session.lang) {
