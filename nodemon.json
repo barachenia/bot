@@ -1,0 +1,7 @@
+{
+    "ignore": ["node_modules", "logs", "*.log"],
+    "watch": ["src/**/*.js"],
+    "ext": "js,json",
+    "exec": "node -r dotenv/config src/index.js"
+  }
+  
