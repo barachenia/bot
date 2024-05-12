@@ -162,7 +162,7 @@ function launchBot(token) {
     // listenToMiniAppData(bot)
 
     // Launch the bot
-    bot.launch().then(() => console.log('bot launched'))
+    // bot.launch().then(() => console.log('bot launched'))
 
     // Handle stop events
     enableGracefulStop(bot)
